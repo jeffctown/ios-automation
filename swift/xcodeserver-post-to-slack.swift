@@ -39,8 +39,6 @@ do {
     if warningChange != 0 {
         jsonMessage += " :warning: Warnings: \(warningChange)"
     }
-    
-    let json = "{\"text\":\"\(jsonMessage)\"}"
     print("*** Done Constructing JSON Body. (\(json))")
     
     Slack.loggingEnabled = true
