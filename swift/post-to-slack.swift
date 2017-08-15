@@ -1,6 +1,6 @@
 import Foundation
 import Moderator
-
+import SlackApi
 
 class RunLoop {
     static var dispatchSemaphore = DispatchSemaphore(value: 0)
@@ -14,44 +14,14 @@ let urlSlugArg = arguments.add(Argument<String>.optionWithValue("p", name: "path
 do {
     try arguments.parse()
     
-    print("*** Constructing Slack URL.")
-    let urlString = "https://hooks.slack.com/services/" + urlSlugArg.value
-    let url = URL(string: urlString)!
-    print("*** Done Constructing Slack URL: (\(url.absoluteString))")
-    
-    print("*** Constructing JSON Body.")
-    let json = "{\"text\":\"\(messageArg.value)\"}"
-    print("*** Done Constructing JSON Body. (\(json))")
-    
-    // url session & configuration
-    let configuration = URLSessionConfiguration.default
-    let urlSession = URLSession(configuration: configuration)
-    
-    // url request
-    var urlRequest = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 5.0)
-    urlRequest.httpMethod = "POST"
-    
-    // post body
-    let bodyData = json.data(using: String.Encoding.utf8, allowLossyConversion: true)
-    print("*** HTTP Body: \(bodyData!)")
-    urlRequest.httpBody = bodyData
-    
-    // do it now
-    print("*** Posting Message to Slack.")
-    urlSession.dataTask(with: urlRequest, completionHandler: { (data, response, error) in
-        print("*** Done Posting Message to Slack.")
-        
-        if let httpResponse = response as? HTTPURLResponse {
-            print("*** ResponseCode: \(httpResponse.statusCode)")
-        }
-        
+    Slack.loggingEnabled = true
+    try Slack().postMessage(urlSlug: urlSlugArg.value, message: messageArg.value, completion: { (data, error) in
         if let error = error {
-            print("*** Error encountered: \(error)")
             exit(Int32(error._code))
         }
         
         RunLoop.dispatchSemaphore.signal()
-    }).resume()
+    })
     
     RunLoop.dispatchSemaphore.wait()
     
