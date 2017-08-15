@@ -25,24 +25,24 @@ do {
         throw ArgumentError(errormessage: "Warnings value not an integer value.")
     }
     
-    print("*** Constructing JSON Body.")
+    print("*** Constructing Message.")
     
     // basic result
-    var jsonMessage = "\(botNameArg.value) was built with result *\(integrationResultArg.value)*"
+    var message = "\(botNameArg.value) was built with result *\(integrationResultArg.value)*"
     
     // add errors if the number of them changed
     if errorChange != 0 {
-        jsonMessage += " :no_entry_sign: Errors : \(errorChange)"
+        message += " :no_entry_sign: Errors : \(errorChange)"
     }
     
     // add warnings if the number of them changed
     if warningChange != 0 {
-        jsonMessage += " :warning: Warnings: \(warningChange)"
+        message += " :warning: Warnings: \(warningChange)"
     }
-    print("*** Done Constructing JSON Body. (\(json))")
+    print("*** Done Constructing Message. (\(message))")
     
     Slack.loggingEnabled = true
-    try Slack().postMessage(urlSlug: urlSlugArg.value, message: jsonMessage, completion: { (data, error) in
+    try Slack().postMessage(urlSlug: urlSlugArg.value, message: message, completion: { (data, error) in
         if let error = error {
             exit(Int32(error._code))
         }
