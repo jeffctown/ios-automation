@@ -34,17 +34,19 @@ do {
     print("*** Regular expression created.")
     
     print("*** Searching in project for regex.")
-    let matches = regex.matches(in: projectFileContents, options: [], range: NSRange(location: 0, length: projectFileContents.characters.count))
+    var matches = regex.matches(in: projectFileContents, options: [], range: NSRange(location: 0, length: projectFileContents.characters.count))
     print("*** Regex search complete.  \(matches.count) matches found.")
-    
-    for match in matches {
-        if let nsRange = projectFileContents.range(from: match.range) {
-            let matchString = projectFileContents.substring(with: nsRange)
+
+    while matches.count > 0 {
+    	let match = matches.first!
+	if let nsRange = projectFileContests.range(from: match.range) {
+	    let matchString = projectFileContents.substring(with: nsRange)
             print("*** Matched: \(matchString)")
             print("*** Replacing with \(replacementArg.value)")
             projectFileContents.replaceSubrange(nsRange, with: replacementArg.value)
-        }
-    }
+	}
+	matches = regex.matches(in: projectFileContents, options: [], range: NSRange(location: 0, length: projectFileContents.characters.count))
+    }    
     
     print("*** Writing out new projects contents.")
     try projectFile.write(string: projectFileContents)
