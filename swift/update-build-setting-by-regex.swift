@@ -8,14 +8,9 @@ let regexArg = arguments.add(Argument<String>.optionWithValue("r", name: "regex"
 let replacementArg = arguments.add(Argument<String>.optionWithValue("n", name: "new", description: "The string to replace the regex match with.").required())
 
 extension String {
-    func range(from nsRange: NSRange) -> Range<String.Index>? {
-        guard
-            let from16 = utf16.index(utf16.startIndex, offsetBy: nsRange.location, limitedBy: utf16.endIndex),
-            let to16 = utf16.index(utf16.startIndex, offsetBy: nsRange.location + nsRange.length, limitedBy: utf16.endIndex),
-            let from = from16.samePosition(in: self),
-            let to = to16.samePosition(in: self)
-            else { return nil }
-        return from ..< to
+    func replacing(pattern: String, withTemplate: String) throws -> String {
+        let regex = try NSRegularExpression(pattern: pattern, options: .caseInsensitive)
+        return regex.stringByReplacingMatches(in: self, options: [], range: NSRange(0..<self.utf16.count), withTemplate: withTemplate)
     }
 }
 
@@ -34,19 +29,7 @@ do {
     print("*** Regular expression created.")
     
     print("*** Searching in project for regex.")
-    var matches = regex.matches(in: projectFileContents, options: [], range: NSRange(location: 0, length: projectFileContents.characters.count))
-    print("*** Regex search complete.  \(matches.count) matches found.")
-
-    while matches.count > 0 {
-    	let match = matches.first!
-	if let nsRange = projectFileContents.range(from: match.range) {
-	    let matchString = projectFileContents.substring(with: nsRange)
-            print("*** Matched: \(matchString)")
-            print("*** Replacing with \(replacementArg.value)")
-            projectFileContents.replaceSubrange(nsRange, with: replacementArg.value)
-	}
-	matches = regex.matches(in: projectFileContents, options: [], range: NSRange(location: 0, length: projectFileContents.characters.count))
-    }    
+    projectFileContents = try projectFileContents.replacing(pattern: regexArg.value, withTemplate: replacementArg.value)
     
     print("*** Writing out new projects contents.")
     try projectFile.write(string: projectFileContents)
